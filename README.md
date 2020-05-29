@@ -10,6 +10,7 @@ The main code game is stored in home.dart where game UI and logic is handled.
 
 ## TODO
 Separate game logic from UI
+
 Fix Google Play Games services
 
 ## Download Links
