@@ -20,16 +20,14 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
   int _record = 0;
   double _positionTop = 200;
   double _positionLeft = 200;
-  double _badPositionTop = 300;
-  double _badPositionLeft = 300;
-  bool _badBoxActive = true;
   bool _tapping = false;
   bool _gameOver = false;
   bool _gameWaiting = true;
   bool _newRecord = false;
   bool _firstPlay = false;
+  bool _badBox = false;
   Timer _loseTimer = Timer(Duration(), () {});
-  int _timeLimit = 800;
+  int _timeLimit = 1100;
   AssetsAudioPlayer _audioPlayer = AssetsAudioPlayer();
   List<Color> _colors = [
     Colors.blueGrey,
@@ -239,37 +237,13 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                       width: 80.0,
                       height: 80.0,
                       decoration: BoxDecoration(
-                          color: _currentColor,
+                          color: _badBox ? Color(0XFFE81123) : _currentColor,
                           borderRadius: BorderRadius.circular(10.0)),
                     ),
                   ),
                 ),
               ),
-            ), // Good Box
-            Positioned(
-              top: _badPositionTop,
-              left: _badPositionLeft,
-              child: Visibility(
-                visible: _gameOver ? false : true,
-                child: AnimatedOpacity(
-                  opacity: _tapping || _gameOver ? 0 : 1,
-                  duration: Duration(milliseconds: 100),
-                  child: InkWell(
-                    onTap: () {
-                      _loseGame();
-                      _flicker(color: Colors.red);
-                    },
-                    child: Container(
-                      width: 80.0,
-                      height: 80.0,
-                      decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(10.0)),
-                    ),
-                  ),
-                ),
-              ),
-            ), // Bad Box
+            ),
           ],
         ),
       ),
@@ -305,7 +279,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
   }
 
   _loseGame() {
-    _playGameOver();
+    _badBox ? _playBadBox() : _playGameOver();
     setState(() {
       _firstPlay = false;
       _gameOver = true;
@@ -318,6 +292,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
 
   _restartGame() {
     setState(() {
+      _badBox = false;
       _newRecord = false;
       _currentColor = Colors.greenAccent;
       _timeLimit = 1000;
@@ -332,16 +307,22 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
       return;
     }
     _loseTimer.cancel();
+    if(_badBox){
+      _loseGame();
+      return;
+    }
     _playTapSound();
     final Random _random = Random();
+
     setState(() {
       _tapping = true;
       _gameWaiting = false;
+      _badBox = false;
     });
     _increaseScore();
     if (_score == 5) {
       setState(() {
-        _timeLimit -= 100;
+        _timeLimit -= 50;
       });
     }
     if (_score == 10) {
@@ -352,38 +333,33 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     if (_score % 10 == 0) {
       setState(() {
         _timeLimit -= 50;
-        _currentColor = _colors[Random().nextInt(_colors.length)];
+        _currentColor = _colors[_random.nextInt(_colors.length)];
       });
       _flicker();
-    }
-    if(_score == 100){
-      _badBoxActive = true;
     }
     await Future.delayed(Duration(milliseconds: _timeLimit));
     double left = 50 + _random.nextInt(size.width.toInt() - 130).toDouble();
     double top = 50 + _random.nextInt(size.height.toInt() - 130).toDouble();
+    int _randomBadBoxChecker = _random.nextInt(2);
+    if(_randomBadBoxChecker == 1) {
+      setState(() {
+        _badBox = true;
+      });
+    }
     setState(() {
       _positionLeft = left;
       _positionTop = top;
       _tapping = false;
     });
-    if (_badBoxActive) {
-      double badLeft = 50 + _random.nextInt(size.width.toInt() - 130).toDouble();
-      if(badLeft <= _positionLeft + 80 && badLeft >= _positionLeft - 80){
-        badLeft = 50 + _random.nextInt(size.width.toInt() - 130).toDouble();
-      }
-      double badTop = 50 + _random.nextInt(size.height.toInt() - 130).toDouble();
-      if(badTop <= _positionTop + 80 && badTop >= _positionTop - 80){
-        badTop = 50 + _random.nextInt(size.width.toInt() - 130).toDouble();
-      }
-      setState(() {
-        _badPositionLeft = badLeft;
-        _badPositionTop = badTop;
-      });
-      
-    }
     _loseTimer = Timer(Duration(milliseconds: _timeLimit), () {
-      _loseGame();
+      if(!_badBox) {
+        _loseGame();
+      } else {
+        setState(() {
+          _badBox = false;
+        });
+        _tap();
+      }
     });
     return;
   }
@@ -430,6 +406,16 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     if (_soundOn) {
       _audioPlayer.open(AssetsAudio(
         asset: "over.mp3",
+        folder: "assets/audios/",
+      ));
+      _audioPlayer.play();
+    }
+  }
+
+    void _playBadBox() {
+    if (_soundOn) {
+      _audioPlayer.open(AssetsAudio(
+        asset: "bad_box.mp3",
         folder: "assets/audios/",
       ));
       _audioPlayer.play();
