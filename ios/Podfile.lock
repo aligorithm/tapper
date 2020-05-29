@@ -2,27 +2,45 @@ PODS:
   - assets_audio_player (0.0.1):
     - Flutter
   - Flutter (1.0.0)
+  - games_services (0.0.1):
+    - Flutter
   - shared_preferences (0.0.1):
+    - Flutter
+  - shared_preferences_macos (0.0.1):
+    - Flutter
+  - shared_preferences_web (0.0.1):
     - Flutter
 
 DEPENDENCIES:
   - assets_audio_player (from `.symlinks/plugins/assets_audio_player/ios`)
-  - Flutter (from `.symlinks/flutter/ios-release`)
+  - Flutter (from `Flutter`)
+  - games_services (from `.symlinks/plugins/games_services/ios`)
   - shared_preferences (from `.symlinks/plugins/shared_preferences/ios`)
+  - shared_preferences_macos (from `.symlinks/plugins/shared_preferences_macos/ios`)
+  - shared_preferences_web (from `.symlinks/plugins/shared_preferences_web/ios`)
 
 EXTERNAL SOURCES:
   assets_audio_player:
     :path: ".symlinks/plugins/assets_audio_player/ios"
   Flutter:
-    :path: ".symlinks/flutter/ios-release"
+    :path: Flutter
+  games_services:
+    :path: ".symlinks/plugins/games_services/ios"
   shared_preferences:
     :path: ".symlinks/plugins/shared_preferences/ios"
+  shared_preferences_macos:
+    :path: ".symlinks/plugins/shared_preferences_macos/ios"
+  shared_preferences_web:
+    :path: ".symlinks/plugins/shared_preferences_web/ios"
 
 SPEC CHECKSUMS:
   assets_audio_player: 828c5761d1e51c569f40e622db3a2cbfd61ecb7d
   Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+  games_services: 3b31bee07acbbd3c844c619f90026e9f815bf139
   shared_preferences: 430726339841afefe5142b9c1f50cb6bd7793e01
+  shared_preferences_macos: f3f29b71ccbb56bf40c9dd6396c9acf15e214087
+  shared_preferences_web: 141cce0c3ed1a1c5bf2a0e44f52d31eeb66e5ea9
 
-PODFILE CHECKSUM: 10ae9c18d12c9ffc2275c9a159a3b1e281990db0
+PODFILE CHECKSUM: 1b66dae606f75376c5f2135a8290850eeb09ae83
 
-COCOAPODS: 1.7.5
+COCOAPODS: 1.8.4
