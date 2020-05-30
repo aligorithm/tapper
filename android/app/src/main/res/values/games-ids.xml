@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Google Play game services IDs.
+Save this file as res/values/games-ids.xml in your project.
+-->
+<resources>
+    <!-- app_id -->
+    <string name="app_id" translatable="false">1019601637898</string>
+    <!-- package_name -->
+    <string name="package_name" translatable="false">ng.i.aligorithm.tapper</string>
+    <!-- leaderboard High Scores -->
+    <string name="leaderboard_high_scores" translatable="false">CgkIiqT5p9YdEAIQAQ</string>
+</resources>

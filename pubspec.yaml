@@ -26,6 +26,7 @@ dependencies:
   assets_audio_player: ^1.0.1
   shared_preferences: ^0.5.6+1
   games_services: any
+  play_games: ^0.5.5
 
 dev_dependencies:
   flutter_test:

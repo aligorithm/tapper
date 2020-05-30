@@ -3,7 +3,8 @@ import 'dart:math';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:games_services/games_services.dart';
-import 'package:games_services/score.dart';
+import 'package:games_services/models/score.dart';
+import 'package:play_games/play_games.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tapper/widgets/circlebutton.dart';
 import 'dart:io' show Platform;
@@ -61,13 +62,13 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
   Size size;
   @override
   void initState() {
-    GamesServices.signIn();
     super.initState();
     _initialize();
     _currentColor = Colors.greenAccent;
   }
 
   void _initialize() async {
+    _gameServiceSetup();
     _sharedPreferences = await SharedPreferences.getInstance();
     setState(() {
       _record = _sharedPreferences.getInt("record") ?? 0;
@@ -81,11 +82,26 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     if (_soundOn) {
       _playSoundtrack();
     }
-    GamesServices.submitScore(
-        score: Score(
-            androidLeaderboardID: 'CgkIiqT5p9YdEAIQAQ',
-            iOSLeaderboardID: 'highscores',
-            value: _record));
+  }
+
+  void _gameServiceSetup() async {
+    if (Platform.isIOS) {
+      GamesServices.signIn();
+      GamesServices.submitScore(
+          score: Score(
+              // androidLeaderboardID: 'CgkIiqT5p9YdEAIQAQ',
+              iOSLeaderboardID: 'highscores',
+              value: _record));
+    } else {
+      SigninResult result = await PlayGames.signIn();
+      if (result.success) {
+        await PlayGames.setPopupOptions();
+        // this.account = result.account;
+        debugPrint("GPG Success");
+      } else {
+        debugPrint("GPG" + result.message);
+      }
+    }
   }
 
   @override
@@ -203,16 +219,16 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                       SizedBox(
                         width: 32.0,
                       ),
-                      Platform.isIOS
-                          ? CircleButton(
-                              active: true,
-                              iconData: Icons.list,
-                              onTap: () {
-                                GamesServices.showLeaderboards(
-                                    iOSLeaderboardID: 'highscores');
-                              },
-                            )
-                          : Container()
+                      CircleButton(
+                        active: true,
+                        iconData: Icons.list,
+                        onTap: () {
+                          Platform.isIOS
+                              ? GamesServices.showLeaderboards(
+                                  iOSLeaderboardID: 'highscores')
+                              : PlayGames.showLeaderboard("CgkIiqT5p9YdEAIQAQ");
+                        },
+                      )
                     ],
                   ),
                 ),
@@ -276,6 +292,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
             androidLeaderboardID: 'CgkIiqT5p9YdEAIQAQ',
             iOSLeaderboardID: 'highscores',
             value: _record));
+    PlayGames.submitScoreById("CgkIiqT5p9YdEAIQAQ", _record);
   }
 
   _loseGame() {
@@ -307,7 +324,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
       return;
     }
     _loseTimer.cancel();
-    if(_badBox){
+    if (_badBox) {
       _loseGame();
       return;
     }
@@ -341,7 +358,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     double left = 50 + _random.nextInt(size.width.toInt() - 130).toDouble();
     double top = 50 + _random.nextInt(size.height.toInt() - 130).toDouble();
     int _randomBadBoxChecker = _random.nextInt(2);
-    if(_randomBadBoxChecker == 1) {
+    if (_randomBadBoxChecker == 1) {
       setState(() {
         _badBox = true;
       });
@@ -352,7 +369,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
       _tapping = false;
     });
     _loseTimer = Timer(Duration(milliseconds: _timeLimit), () {
-      if(!_badBox) {
+      if (!_badBox) {
         _loseGame();
       } else {
         setState(() {
@@ -394,9 +411,8 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
 
   void _playSoundtrack() {
     if (_soundOn) {
-      _audioPlayer.open(AssetsAudio(
-        asset: "soundtrack.mp3",
-        folder: "assets/audios/",
+      _audioPlayer.open(Audio(
+        "assets/audios/soundtrack.mp3",
       ));
       _audioPlayer.play();
     }
@@ -404,29 +420,24 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
 
   void _playGameOver() {
     if (_soundOn) {
-      _audioPlayer.open(AssetsAudio(
-        asset: "over.mp3",
-        folder: "assets/audios/",
+      _audioPlayer.open(Audio(
+        "assets/audios/over.mp3",
       ));
       _audioPlayer.play();
     }
   }
 
-    void _playBadBox() {
+  void _playBadBox() {
     if (_soundOn) {
-      _audioPlayer.open(AssetsAudio(
-        asset: "bad_box.mp3",
-        folder: "assets/audios/",
-      ));
+      _audioPlayer.open(Audio("assets/audios/bad_box.mp3"));
       _audioPlayer.play();
     }
   }
 
   void _playTapSound() {
     if (_soundOn) {
-      _audioPlayer.open(AssetsAudio(
-        asset: "tap.mp3",
-        folder: "assets/audios/",
+      _audioPlayer.open(Audio(
+        "assets/audios/tap.mp3",
       ));
       _audioPlayer.play();
     }
