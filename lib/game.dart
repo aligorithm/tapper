@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:games_services/games_services.dart';
 import 'package:play_games/play_games.dart';
 import 'package:provider/provider.dart';
+import 'package:tapper/constants.dart';
 import 'package:tapper/game_provider.dart';
 import 'dart:io' show Platform;
 
@@ -24,6 +25,7 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
   bool _gameWaiting = true;
   bool _newRecord = false;
   bool _badBox = false;
+  bool _boxInvisibleForMiscellaneousReasons = false;
   Timer _loseTimer = Timer(Duration(), () {});
   int _timeLimit = 1000;
   AssetsAudioPlayer _audioPlayer = AssetsAudioPlayer();
@@ -118,7 +120,9 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
               top: _positionTop,
               left: _positionLeft,
               child: Visibility(
-                visible: _gameOver ? false : true,
+                visible: (_gameOver || _boxInvisibleForMiscellaneousReasons)
+                    ? false
+                    : true,
                 child: AnimatedOpacity(
                   opacity: _tapping || _gameOver ? 0 : 1,
                   duration: Duration(milliseconds: 100),
@@ -155,9 +159,10 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
                               onPressed: () {
                                 Platform.isIOS
                                     ? GamesServices.showLeaderboards(
-                                        iOSLeaderboardID: 'highscores')
+                                        iOSLeaderboardID:
+                                            Constants.ios_leaderboard_id)
                                     : PlayGames.showLeaderboard(
-                                        "CgkIiqT5p9YdEAIQAQ");
+                                        Constants.android_leaderboard_id);
                               }),
                           SizedBox(
                             width: 64.0,
@@ -270,8 +275,12 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
       });
     }
     await Future.delayed(Duration(milliseconds: _timeLimit));
+    _boxInvisibleForMiscellaneousReasons = false;
     double left = 50 + _random.nextInt(size.width.toInt() - 130).toDouble();
-    double top = 50 + _random.nextInt(size.height.toInt() - (size.height * .2).toInt()).toDouble();
+    double top = 50 +
+        _random
+            .nextInt(size.height.toInt() - (size.height * .2).toInt())
+            .toDouble();
     int _randomBadBoxChecker = _random.nextInt(2);
     if (_randomBadBoxChecker == 1) {
       setState(() {
@@ -288,6 +297,7 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
         _loseGame();
       } else {
         setState(() {
+          _boxInvisibleForMiscellaneousReasons = true;
           _badBox = false;
         });
         _tap();
