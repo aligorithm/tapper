@@ -5,7 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:games_services/games_services.dart';
 import 'package:games_services/models/score.dart';
 import 'package:play_games/play_games.dart';
+import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:tapper/game_provider.dart';
 import 'package:tapper/widgets/circlebutton.dart';
 import 'dart:io' show Platform;
 
@@ -18,14 +20,12 @@ class Game extends StatefulWidget {
 
 class _GameState extends State<Game> with WidgetsBindingObserver {
   int _score = 0;
-  int _record = 0;
   double _positionTop = 200;
   double _positionLeft = 200;
   bool _tapping = false;
   bool _gameOver = false;
   bool _gameWaiting = true;
   bool _newRecord = false;
-  bool _firstPlay = false;
   bool _badBox = false;
   Timer _loseTimer = Timer(Duration(), () {});
   int _timeLimit = 1000;
@@ -56,56 +56,17 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
   Color _currentColor;
   Color _backgroundColor = Colors.white;
   SharedPreferences _sharedPreferences;
-  // TapperProvider _tapperProvider;
-  bool _soundOn = true;
-  // List<Widget> _tappers = [];
+  GameProvider _provider;
   Size size;
   @override
   void initState() {
     super.initState();
-    _initialize();
     _currentColor = Colors.greenAccent;
-  }
-
-  void _initialize() async {
-    _gameServiceSetup();
-    _sharedPreferences = await SharedPreferences.getInstance();
-    setState(() {
-      _record = _sharedPreferences.getInt("record") ?? 0;
-      _soundOn = _sharedPreferences.getBool("soundOn") ?? true;
-    });
-    if (_record == 0) {
-      setState(() {
-        _firstPlay = true;
-      });
-    }
-    if (_soundOn) {
-      _playSoundtrack();
-    }
-  }
-
-  void _gameServiceSetup() async {
-    if (Platform.isIOS) {
-      GamesServices.signIn();
-      GamesServices.submitScore(
-          score: Score(
-              // androidLeaderboardID: 'CgkIiqT5p9YdEAIQAQ',
-              iOSLeaderboardID: 'highscores',
-              value: _record));
-    } else {
-      SigninResult result = await PlayGames.signIn();
-      if (result.success) {
-        await PlayGames.setPopupOptions();
-        // this.account = result.account;
-      } else {
-        debugPrint("GPG" + result.message);
-      }
-    }
   }
 
   @override
   void didChangeDependencies() {
-    // _tapperProvider = Provider.of<TapperProvider>(context);
+    _provider = Provider.of<GameProvider>(context);
     super.didChangeDependencies();
   }
 
@@ -113,126 +74,23 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     size = MediaQuery.of(context).size;
     return Scaffold(
+      backgroundColor: Color(0XFF4E4C67),
       body: Container(
-        color: _backgroundColor,
         child: Stack(
           children: <Widget>[
             Column(
               children: <Widget>[
-                SafeArea(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: <Widget>[
+                Padding(
+                  padding: const EdgeInsets.only(left: 20.0,top: 42.0),
+                  child: SafeArea(
+                    child: Row(children: <Widget>[
+                      Image.asset('assets/images/crown.png',height: 36.0,),
                       Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: Column(
-                          children: <Widget>[
-                            Text(
-                              _score.toString(),
-                              style: TextStyle(
-                                  fontSize: 24.0, color: Colors.greenAccent),
-                            ),
-                            _newRecord
-                                ? AnimatedContainer(
-                                    duration: Duration(milliseconds: 200),
-                                    child: Text("New Record!",
-                                        style: TextStyle(
-                                            fontSize: 20.0, color: Colors.red)),
-                                  )
-                                : Container(),
-                          ],
-                        ),
+                        padding: EdgeInsets.only(left:16.0),
+                        child: Text(_provider.record.toString(),style: TextStyle(fontSize:24.0,color:Colors.white),),
                       ),
-                      SizedBox(
-                        width: 20.0,
-                      )
-                    ],
+                    ]),
                   ),
-                ),
-                AnimatedOpacity(
-                    opacity: _gameWaiting || _gameOver ? 1 : 0,
-                    duration: Duration(milliseconds: 200),
-                    child: Column(
-                      children: <Widget>[
-                        Text(
-                          "Tapper:",
-                          style:
-                              TextStyle(fontSize: 32.0, color: Colors.black54),
-                        ),
-                        SizedBox(
-                          height: 10.0,
-                        ),
-                        _gameWaiting
-                            ? Container()
-                            : Text("Score: $_score",
-                                style: TextStyle(
-                                    fontSize: 24.0, color: Colors.greenAccent)),
-                        Text("Record: $_record",
-                            style: TextStyle(
-                                fontSize: 24.0, color: Colors.greenAccent)),
-                      ],
-                    )),
-                Expanded(
-                  child: Container(),
-                ),
-                AnimatedOpacity(
-                  opacity: _gameOver ? 1 : 0,
-                  duration: Duration(milliseconds: 200),
-                  child: Container(
-                    width: 200.0,
-                    child: RaisedButton(
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16.0)),
-                      child: Text(
-                        "Restart Game",
-                        style: TextStyle(color: Colors.white),
-                      ),
-                      color: Colors.greenAccent,
-                      onPressed: () {
-                        _restartGame();
-                      },
-                    ),
-                  ),
-                ),
-                SizedBox(height: 32.0),
-                AnimatedOpacity(
-                  opacity: _gameOver || _gameWaiting ? 1 : 0,
-                  duration: Duration(milliseconds: 200),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      CircleButton(
-                        active: _soundOn,
-                        iconData:
-                            _soundOn ? Icons.volume_up : Icons.volume_mute,
-                        onTap: () {
-                          setState(() {
-                            _soundOn = !_soundOn;
-                          });
-                          _sharedPreferences.setBool("soundOn", _soundOn);
-                          if (!_soundOn) {
-                            _audioPlayer.stop();
-                          }
-                        },
-                      ),
-                      SizedBox(
-                        width: 32.0,
-                      ),
-                      CircleButton(
-                        active: true,
-                        iconData: Icons.list,
-                        onTap: () {
-                          Platform.isIOS
-                              ? GamesServices.showLeaderboards(
-                                  iOSLeaderboardID: 'highscores')
-                              : PlayGames.showLeaderboard("CgkIiqT5p9YdEAIQAQ");
-                        },
-                      )
-                    ],
-                  ),
-                ),
-                SizedBox(
-                  height: 64.0,
                 )
               ],
             ),
@@ -269,7 +127,7 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
     setState(() {
       _score++;
     });
-    if (_score > _record && !_firstPlay) {
+    if (_score > _provider.record && !_provider.firstPlay) {
       setState(() {
         _newRecord = true;
       });
@@ -282,22 +140,13 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
   }
 
   _setNewRecord() {
-    setState(() {
-      _record = _score;
-    });
-    _sharedPreferences.setInt("record", _record);
-    GamesServices.submitScore(
-        score: Score(
-            androidLeaderboardID: 'CgkIiqT5p9YdEAIQAQ',
-            iOSLeaderboardID: 'highscores',
-            value: _record));
-    PlayGames.submitScoreById("CgkIiqT5p9YdEAIQAQ", _record);
+    _provider.record = _score;
   }
 
   _loseGame() {
     _badBox ? _playBadBox() : _playGameOver();
     setState(() {
-      _firstPlay = false;
+      _provider.firstPlay = false;
       _gameOver = true;
       _timeLimit = 1000;
       _positionTop = 200;
@@ -402,23 +251,14 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused) {
-      _audioPlayer.pause();
+      _audioPlayer.stop();
     } else if (state == AppLifecycleState.resumed) {
       _audioPlayer.play();
     }
   }
 
-  void _playSoundtrack() {
-    if (_soundOn) {
-      _audioPlayer.open(Audio(
-        "assets/audios/soundtrack.mp3",
-      ));
-      _audioPlayer.play();
-    }
-  }
-
   void _playGameOver() {
-    if (_soundOn) {
+    if (_provider.soundOn) {
       _audioPlayer.open(Audio(
         "assets/audios/over.mp3",
       ));
@@ -427,14 +267,14 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
   }
 
   void _playBadBox() {
-    if (_soundOn) {
+    if (_provider.soundOn) {
       _audioPlayer.open(Audio("assets/audios/bad_box.mp3"));
       _audioPlayer.play();
     }
   }
 
   void _playTapSound() {
-    if (_soundOn) {
+    if (_provider.soundOn) {
       _audioPlayer.open(Audio(
         "assets/audios/tap.mp3",
       ));
