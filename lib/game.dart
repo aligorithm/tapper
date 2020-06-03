@@ -22,7 +22,7 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
   double _positionLeft = 200;
   bool _tapping = false;
   bool _gameOver = false;
-  bool _gameWaiting = true;
+  // bool _gameWaiting = true;
   bool _newRecord = false;
   bool _badBox = false;
   bool _boxInvisibleForMiscellaneousReasons = false;
@@ -254,7 +254,7 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
 
     setState(() {
       _tapping = true;
-      _gameWaiting = false;
+      // _gameWaiting = false;s
       _badBox = false;
     });
     _increaseScore();
@@ -269,19 +269,24 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
       });
     }
     if (_score % 10 == 0) {
-      setState(() {
+      if(_timeLimit >= 500){
         _timeLimit -= 50;
+      }
+      setState(() {
         _currentColor = _colors[_random.nextInt(_colors.length)];
       });
     }
     await Future.delayed(Duration(milliseconds: _timeLimit));
     _boxInvisibleForMiscellaneousReasons = false;
-    double left = 50 + _random.nextInt(size.width.toInt() - 130).toDouble();
-    double top = 50 +
+    double left = _random.nextInt(size.width.toInt() - 130).toDouble();
+    double top =
         _random
-            .nextInt(size.height.toInt() - (size.height * .2).toInt())
+            .nextInt(size.height.toInt() - 130)
             .toDouble();
-    int _randomBadBoxChecker = _random.nextInt(2);
+    if(top < 200){
+      top += 200;
+    }
+    int _randomBadBoxChecker = _random.nextInt(3);
     if (_randomBadBoxChecker == 1) {
       setState(() {
         _badBox = true;
