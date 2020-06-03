@@ -3,12 +3,9 @@ import 'dart:math';
 import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:flutter/material.dart';
 import 'package:games_services/games_services.dart';
-import 'package:games_services/models/score.dart';
 import 'package:play_games/play_games.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tapper/game_provider.dart';
-import 'package:tapper/widgets/circlebutton.dart';
 import 'dart:io' show Platform;
 
 class Game extends StatefulWidget {
@@ -54,8 +51,6 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
     Color(0XFF498205)
   ];
   Color _currentColor;
-  Color _backgroundColor = Colors.white;
-  SharedPreferences _sharedPreferences;
   GameProvider _provider;
   Size size;
   @override
@@ -80,16 +75,41 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
           children: <Widget>[
             Column(
               children: <Widget>[
-                Padding(
-                  padding: const EdgeInsets.only(left: 20.0,top: 42.0),
-                  child: SafeArea(
-                    child: Row(children: <Widget>[
-                      Image.asset('assets/images/crown.png',height: 36.0,),
-                      Padding(
-                        padding: EdgeInsets.only(left:16.0),
-                        child: Text(_provider.record.toString(),style: TextStyle(fontSize:24.0,color:Colors.white),),
-                      ),
-                    ]),
+                SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.only(left: 20.0, top: 42.0),
+                    child: Stack(
+                      children: [
+                        Row(children: <Widget>[
+                          Image.asset(
+                            'assets/images/crown.png',
+                            height: 36.0,
+                          ),
+                          Padding(
+                            padding: EdgeInsets.only(left: 16.0),
+                            child: Text(
+                              _provider.record.toString(),
+                              style: TextStyle(
+                                  fontSize: 24.0, color: Colors.white),
+                            ),
+                          ),
+                        ]),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Text(_score.toString(),
+                                style: TextStyle(
+                                    fontSize: 48.0, color: Colors.white)),
+                            Visibility(
+                                visible: _newRecord,
+                                child: Image.asset(
+                                  'assets/images/fire.png',
+                                  height: 40.0,
+                                ))
+                          ],
+                        )
+                      ],
+                    ),
                   ),
                 )
               ],
@@ -117,6 +137,54 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
                 ),
               ),
             ),
+            Positioned(
+                width: size.width,
+                top: size.height * .5,
+                child: Visibility(
+                  visible: _gameOver,
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          IconButton(
+                              icon:
+                                  Image.asset('assets/images/leaderboard.png'),
+                              iconSize: 80,
+                              onPressed: () {
+                                Platform.isIOS
+                                    ? GamesServices.showLeaderboards(
+                                        iOSLeaderboardID: 'highscores')
+                                    : PlayGames.showLeaderboard(
+                                        "CgkIiqT5p9YdEAIQAQ");
+                              }),
+                          SizedBox(
+                            width: 64.0,
+                          ),
+                          IconButton(
+                              icon: Image.asset(_provider.soundOn
+                                  ? 'assets/images/sound.png'
+                                  : 'assets/images/sound_muted.png'),
+                              iconSize: 80,
+                              onPressed: () {
+                                _provider.soundOn = !_provider.soundOn;
+                              }),
+                        ],
+                      ),
+                      SizedBox(
+                        height: size.height * .05,
+                      ),
+                      IconButton(
+                        iconSize: 80.0,
+                        icon: Image.asset('assets/images/play.png'),
+                        onPressed: () {
+                          _restartGame();
+                        },
+                      ),
+                    ],
+                  ),
+                ))
           ],
         ),
       ),
@@ -200,11 +268,10 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
         _timeLimit -= 50;
         _currentColor = _colors[_random.nextInt(_colors.length)];
       });
-      _flicker();
     }
     await Future.delayed(Duration(milliseconds: _timeLimit));
     double left = 50 + _random.nextInt(size.width.toInt() - 130).toDouble();
-    double top = 50 + _random.nextInt(size.height.toInt() - 130).toDouble();
+    double top = 50 + _random.nextInt(size.height.toInt() - (size.height * .2).toInt()).toDouble();
     int _randomBadBoxChecker = _random.nextInt(2);
     if (_randomBadBoxChecker == 1) {
       setState(() {
@@ -229,18 +296,18 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
     return;
   }
 
-  Future<void> _flicker({Color color}) async {
-    if (color == null) {
-      color = _currentColor;
-    }
-    setState(() {
-      _backgroundColor = color.withAlpha(100);
-    });
-    await Future.delayed(Duration(milliseconds: 200));
-    setState(() {
-      _backgroundColor = Colors.white;
-    });
-  }
+  // Future<void> _flicker({Color color}) async {
+  //   if (color == null) {
+  //     color = _currentColor;
+  //   }
+  //   setState(() {
+  //     _backgroundColor = color.withAlpha(100);
+  //   });
+  //   await Future.delayed(Duration(milliseconds: 200));
+  //   setState(() {
+  //     _backgroundColor = Colors.white;
+  //   });
+  // }
 
   @override
   void dispose() {

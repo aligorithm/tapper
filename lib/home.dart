@@ -128,7 +128,7 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
                 onPressed: () {
                   _audioPlayer.stop();
                   Navigator.of(context)
-                      .push(MaterialPageRoute(builder: (_) => Game()));
+                      .pushReplacement(MaterialPageRoute(builder: (_) => Game()));
                 }),
           ],
         ));
