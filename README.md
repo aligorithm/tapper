@@ -1,7 +1,9 @@
 # tapper
 
-A mobile game built using the Flutter framework. Tested on both Android and iOS.
+A mobile game built using the Flutter framework. Compatible with Android and iOS
+
 ![App Screenshot 1](/screenshots/screenshot_1.png)
+
 ![App Screenshot 1](/screenshots/screenshot_2.png)
 
 ## About
@@ -11,6 +13,7 @@ The game involves tapping on a box to increase the score. Tapping too late or ta
 The main code game is stored in game.dart where game UI and logic is handled.
 
 ## Download Links
+
 https://bit.ly/tapperandroid
 
 https://bit.ly/tapperios
