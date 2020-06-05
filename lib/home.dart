@@ -37,13 +37,14 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
     setState(() {
       _provider.record = _sharedPreferences.getInt("record") ?? 0;
       _provider.soundOn = _sharedPreferences.getBool("soundOn") ?? true;
+      _provider.guideSeen = _sharedPreferences.getBool("guideSeen") ?? false;
     });
     if (_provider.record == 0) {
       setState(() {
         _provider.firstPlay = true;
       });
     }
-    if (_provider.soundOn) _playSoundtrack();
+    // if (_provider.soundOn) _playSoundtrack();
   }
 
   void _gameServiceSetup() async {
@@ -134,26 +135,26 @@ class _HomeState extends State<Home> with WidgetsBindingObserver {
         ));
   }
 
-  void _playSoundtrack() {
-    _audioPlayer.open(Audio(
-      "assets/audios/soundtrack.mp3",
-    ));
-    _audioPlayer.loop = true;
-    _audioPlayer.play();
-  }
+  // void _playSoundtrack() {
+  //   _audioPlayer.open(Audio(
+  //     "assets/audios/soundtrack.mp3",
+  //   ));
+  //   _audioPlayer.loop = true;
+  //   _audioPlayer.play();
+  // }
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused) {
-      _audioPlayer.stop();
-    } else if (state == AppLifecycleState.resumed) {
-      _audioPlayer.play();
-    }
-  }
+  // @override
+  // void didChangeAppLifecycleState(AppLifecycleState state) {
+  //   if (state == AppLifecycleState.paused) {
+  //     _audioPlayer.stop();
+  //   } else if (state == AppLifecycleState.resumed) {
+  //     _audioPlayer.play();
+  //   }
+  // }
 
   @override
   void dispose() {
-    _audioPlayer.dispose();
+    // _audioPlayer.dispose();
     super.dispose();
   }
 }

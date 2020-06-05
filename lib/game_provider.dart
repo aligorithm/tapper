@@ -10,10 +10,12 @@ class GameProvider extends ChangeNotifier {
   int _record = 0;
   bool _soundOn = false;
   bool _firstPlay = false;
+  bool _guideSeen = false;
   SharedPreferences _preferences;
   int get record => _record;
   bool get soundOn => _soundOn;
   bool get firstPlay => _firstPlay;
+  bool get guideSeen => _guideSeen;
 
   set record(int record){
     _record = record;
@@ -32,6 +34,12 @@ class GameProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  set guideSeen(bool guideSeen){
+    _guideSeen = guideSeen;
+    _persistGuideSeenSetting(guideSeen);
+    notifyListeners();
+  }
+
 
   _persistRecordAndUpdateGameServices(int record)async{
     if(_preferences == null) _preferences = await SharedPreferences.getInstance();
@@ -45,8 +53,13 @@ class GameProvider extends ChangeNotifier {
     } else PlayGames.submitScoreById("CgkIiqT5p9YdEAIQAQ", _record);
   }
 
-  _persistSoundSetting(bool _soundOn) async{
+  _persistSoundSetting(bool soundOn) async{
     if(_preferences == null) _preferences = await SharedPreferences.getInstance();
-    _preferences.setBool("soundOn", _soundOn);
+    _preferences.setBool("soundOn", soundOn);
   }
+  _persistGuideSeenSetting(bool guideSeen) async{
+    if(_preferences == null) _preferences = await SharedPreferences.getInstance();
+    _preferences.setBool("guideSeen", guideSeen);
+  }
+
 }

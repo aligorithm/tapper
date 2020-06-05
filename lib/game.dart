@@ -9,6 +9,8 @@ import 'package:tapper/constants.dart';
 import 'package:tapper/game_provider.dart';
 import 'dart:io' show Platform;
 
+import 'package:tapper/widgets/game_guide.dart';
+
 class Game extends StatefulWidget {
   Game({Key key}) : super(key: key);
 
@@ -189,7 +191,17 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
                       ),
                     ],
                   ),
-                ))
+                )),
+                _provider.guideSeen ? Container(): Center(
+                  child: Container(
+                    width: size.width * .8,
+                    height: 300.0,
+                    decoration: BoxDecoration(
+                      color:Colors.white,
+                      borderRadius: BorderRadius.circular(12.0)
+                    ),
+                    child: GameGuide()),
+                )
           ],
         ),
       ),
@@ -200,11 +212,14 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
     setState(() {
       _score++;
     });
-    if (_score > _provider.record && !_provider.firstPlay) {
-      setState(() {
+    if (_score > _provider.record) {
+      if(!_provider.firstPlay){
+        setState(() {
         _newRecord = true;
       });
-      await Future.delayed(Duration(milliseconds: 500));
+      }
+      
+      // await Future.delayed(Duration(milliseconds: 500));
       _setNewRecord();
       setState(() {
         _newRecord = false;
