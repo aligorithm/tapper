@@ -311,7 +311,7 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
       _positionTop = top;
       _tapping = false;
     });
-    _loseTimer = Timer(Duration(milliseconds: _badBox ? 400 : _timeLimit), () {
+    _loseTimer = Timer(Duration(milliseconds: _timeLimit), () {
       if (!_badBox) {
         _loseGame();
       } else {
