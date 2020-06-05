@@ -301,8 +301,8 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
     if(top < 200){
       top += 200;
     }
-    int _randomBadBoxChecker = _random.nextInt(3);
-    if (_randomBadBoxChecker == 1) {
+    int _randomBadBoxChecker = _random.nextInt(15);
+    if (_randomBadBoxChecker == 6) {
       setState(() {
         _badBox = true;
       });
@@ -312,7 +312,7 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
       _positionTop = top;
       _tapping = false;
     });
-    _loseTimer = Timer(Duration(milliseconds: _timeLimit), () {
+    _loseTimer = Timer(Duration(milliseconds: _badBox ? 400 : _timeLimit), () {
       if (!_badBox) {
         _loseGame();
       } else {
