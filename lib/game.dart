@@ -269,7 +269,6 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
 
     setState(() {
       _tapping = true;
-      // _gameWaiting = false;s
       _badBox = false;
     });
     _increaseScore();
