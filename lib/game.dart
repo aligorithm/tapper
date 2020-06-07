@@ -300,8 +300,8 @@ class _GameState extends State<Game> with WidgetsBindingObserver {
     if(top < 200){
       top += 200;
     }
-    int _randomBadBoxChecker = _random.nextInt(15);
-    if (_randomBadBoxChecker == 6) {
+    int _randomBadBoxChecker = _random.nextInt(6);
+    if (_randomBadBoxChecker == 3) {
       setState(() {
         _badBox = true;
       });
